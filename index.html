@@ -1,0 +1,52 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@4.6.0/dist/echarts.min.js"></script>
+    <script type="text/javascript">
+        let last_status = 0;
+        async function getInfo(id) {
+            let info = await axios.get(`http://114.55.100.200:3000/${id}/init`)
+        }
+        async function startLiving() {
+            echarts.setOptions
+        }
+
+        async function stopLiving() {
+
+        }
+
+        function setTimer(id) {
+            return setInterval(async () => {
+                let live_status = (await axios.get(`http://114.55.100.200:3000/${id}/living`)).data;
+                if (last_status == 0 && live_status == 1) {
+                    await startLiving();
+                } else if (last_status == 1 && live_status == 0) {
+                    stopLiving();
+                }
+            }, 1500);
+        }
+    </script>
+    <style>
+        #chart {
+            width: 80vw;
+            height: 80vh;
+            position: relative;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chart"></div>
+    <script type="text/javascript">
+        let id = window.prompt("请输入直播房间号", "");
+        /[0-9]*/.test(id) ? setTimer(id) : windows.alert("请输入正确的房间号");
+        echarts.init(document.getElementById('chart'));
+    </script>
+</body>
+
+</html>
