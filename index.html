@@ -5,35 +5,193 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>前端</title>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@4.6.0/dist/echarts.min.js"></script>
+    <script src="echarts.min.js"></script>
     <script type="text/javascript">
         let last_status = 0;
-        async function getInfo(id) {
-            let info = await axios.get(`http://114.55.100.200:3000/${id}/init`)
+        let live_data = [];
+        let chart_options = {
+            title: {
+                text: `【${window.id}】`
+            },
+            grid: {
+                tooltip: {
+                    show: true,
+                    tigger: "axis",
+                    axisPointer: {
+                        type: "cross"
+                    },
+                    snap: true
+                },
+                axisPointer: {
+                    link: [{
+                        xAxisIndex: "all"
+                    }],
+                    snap: true
+                }
+            },
+            legend: {
+                top: 10
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {
+                        show: true
+                    },
+                    restore: {
+                        show: true
+                    },
+                    dataView: {
+                        show: false
+                    },
+                    dataZoom: {
+                        show: false
+                    },
+                    magicType: {
+                        show: false
+                    },
+                    brush: {
+                        show: false
+                    }
+                }
+            },
+            dataZoom: [{
+                    xAxisIndex: [0],
+                    type: "slider",
+                    start: 0,
+                    end: 100
+                },
+                {
+                    xAxisIndex: [0],
+                    type: "inside",
+                    start: 0,
+                    end: 100
+                },
+                {
+                    yAxisIndex: [0],
+                    type: "slider",
+                    start: 0,
+                    end: 100
+                }
+            ],
+            xAxis: {
+                type: "time",
+                interval: 5 * 1000 //5second * 1000ms
+            },
+            yAxis: [{
+                type: "value"
+            }],
+            series: [{
+                type: "line",
+                smooth: true
+            }],
+            dataset: {
+                dimensions: ["update_time", "views"],
+                source: live_data
+            }
+        };
+        async function getInfo(id, init = false) {
+            let info = (await axios.get(`http://localhost:3000/${id}${init?"/init":""}`)).data;
+            if (info.code != 0) throw info.msg;
+            console.log(info);
+            return {
+                result: info.result
+            };
         }
         async function startLiving() {
-            echarts.setOptions
+            alert("开播");
+            window.chart = echarts.init(document.getElementById('chart'));
+            let info = await getInfo(window.id, true);
+            live_data = info.result;
+            let start =
+                live_data.length > 51 ? (1 - 50 / (live_data.length - 1)) * 100 : 0;
+            window.chart.setOption(chart_options);
+            window.chart.setOption({
+                dataZoom: [{
+                        xAxisIndex: [0],
+                        type: "slider",
+                        start: start,
+                        end: 100
+                    },
+                    {
+                        xAxisIndex: [0],
+                        type: "inside",
+                        start: start,
+                        end: 100
+                    },
+                    {
+                        yAxisIndex: [0],
+                        type: "slider",
+                        start: 0,
+                        end: 100
+                    }
+                ],
+                dataset: {
+                    source: live_data
+                }
+            });
         }
 
         async function stopLiving() {
+            alert("下播");
 
         }
 
-        function setTimer(id) {
+        function setTimer(id = window.id) {
             return setInterval(async () => {
-                let live_status = (await axios.get(`http://114.55.100.200:3000/${id}/living`)).data;
+                let live_status = (await axios.get(`http://localhost:3000/${id}/living`)).data;
                 if (last_status == 0 && live_status == 1) {
+                    last_status = 1;
                     await startLiving();
+                } else if (last_status == 1 && live_status == 1) {
+                    let info = await getInfo(window.id);
+                    live_data.push(info.result[0]);
+                    let start =
+                        live_data.length > 51 ? (1 - 50 / (live_data.length - 1)) * 100 : 0;
+                    window.chart.setOption({
+                        title: {
+                            text: `【${window.id}】`
+                        },
+                        dataZoom: [{
+                                xAxisIndex: [0],
+                                type: "slider",
+                                start: start,
+                                end: 100
+                            },
+                            {
+                                xAxisIndex: [0],
+                                type: "inside",
+                                start: start,
+                                end: 100
+                            },
+                            {
+                                yAxisIndex: [0],
+                                type: "slider",
+                                start: 0,
+                                end: 100
+                            }
+                        ],
+                        dataset: {
+                            source: live_data
+                        }
+                    });
                 } else if (last_status == 1 && live_status == 0) {
+                    last_status = 0;
                     stopLiving();
                 }
             }, 1500);
         }
     </script>
     <style>
+        body {
+            margin: 0;
+            padding: 0
+        }
+
         #chart {
-            width: 80vw;
-            height: 80vh;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
             position: relative;
             left: 0;
         }
@@ -43,9 +201,16 @@
 <body>
     <div id="chart"></div>
     <script type="text/javascript">
-        let id = window.prompt("请输入直播房间号", "");
-        /[0-9]*/.test(id) ? setTimer(id) : windows.alert("请输入正确的房间号");
-        echarts.init(document.getElementById('chart'));
+        window.onload = async function () {
+            window.id = window.prompt("请输入直播房间号", "");
+            /[0-9]*/.test(id) ? window.timer = setTimer(window.id) : windows.alert("请输入正确的房间号");
+            let live_status = (await axios.get(`http://localhost:3000/${id}/living`)).data;
+            // if (live_status) {
+            //     setTimer()
+            // } else {
+            //     alert("未开播，请等待。");
+            // }
+        };
     </script>
 </body>
 
