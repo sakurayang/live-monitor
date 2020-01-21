@@ -75,7 +75,7 @@
             ],
             xAxis: {
                 type: "time",
-                interval: 5 * 1000 //5second * 1000ms
+                interval: 60 * 1000 //5second * 1000ms
             },
             yAxis: [{
                 type: "value"
@@ -90,7 +90,7 @@
             }
         };
         async function getInfo(id, init = false) {
-            let info = (await axios.get(`http://localhost:3000/${id}${init?"/init":""}`)).data;
+            let info = (await axios.get(`http://114.55.100.200:3000/${id}${init?"/init":""}`)).data;
             if (info.code != 0) throw info.msg;
             console.log(info);
             return {
@@ -138,7 +138,7 @@
 
         function setTimer(id = window.id) {
             return setInterval(async () => {
-                let live_status = (await axios.get(`http://localhost:3000/${id}/living`)).data;
+                let live_status = (await axios.get(`http://114.55.100.200:3000/${id}/living`)).data;
                 if (last_status == 0 && live_status == 1) {
                     last_status = 1;
                     await startLiving();
@@ -204,7 +204,7 @@
         window.onload = async function () {
             window.id = window.prompt("请输入直播房间号", "");
             /[0-9]*/.test(id) ? window.timer = setTimer(window.id) : windows.alert("请输入正确的房间号");
-            let live_status = (await axios.get(`http://localhost:3000/${id}/living`)).data;
+            let live_status = (await axios.get(`http://114.55.100.200:3000/${id}/living`)).data;
             // if (live_status) {
             //     setTimer()
             // } else {
