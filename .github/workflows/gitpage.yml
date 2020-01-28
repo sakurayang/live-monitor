@@ -18,16 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Use Node.js lastest
+    - name: Use Node.js 12.14.1
       uses: actions/setup-node@v1
       with:
-        node-version: lastest
+        node-version: 12.14.1
     - name: npm install, build, and test
       run: |
         # Build and test the project, then
         # deploy to Azure Web App.
         npm install
         npm run build --if-present
-        npm run test --if-present
     - name: Vuepress to GitHub Pages
       uses: testthedocs/github-pages-deploy-action@0.0.2
