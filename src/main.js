@@ -22,6 +22,7 @@ Vue.component("v-icon", Icon);
 Vue.config.productionTip = false;
 
 new Vue({
+  mode: process.env.IS_ELECTRON ? "hash" : "history",
   router,
   render: h => h(App)
 }).$mount("#app");

@@ -1,14 +1,14 @@
 <template>
-  <div id="app">
-    <transition name="fade" mode="out-in"></transition>
-    <router-view />
-    <transition name="fade" mode="out-in"></transition>
-  </div>
+  <transition name="fade" mode="out-in">
+    <div id="app">
+      <router-view />
+    </div>
+  </transition>
 </template>
 
 <style>
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  /*  font-family: "Avenir", Helvetica, Arial, sans-serif;*/
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
