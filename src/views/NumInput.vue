@@ -3,19 +3,13 @@
     <background />
     <div class="checkin">
       <h1 class="title">
-        请输入{{
-          type === "live"
-            ? "房间号"
-            : type === "video"
-            ? "AV号"
-            : type === "rank"
-            ? "分区号"
-            : "编号"
-        }}
+        <!--eslint-disable-next-line prettier/prettier-->
+        请输入<span :key="type">{{ text }}</span>号
       </h1>
       <input
+        :key="type"
         v-model.number="id"
-        placeholder="请输入房间号"
+        :placeholder="`请输入${text}号`"
         type="text"
         class="input"
         autofocus="true"
@@ -30,8 +24,18 @@ import background from "@/components/Background.vue";
 export default {
   components: { background },
   data: function() {
+    let type = this.$attrs.type;
+    let text =
+      type === "live"
+        ? "房间"
+        : type === "video"
+        ? "AV"
+        : type === "rank"
+        ? "分区"
+        : "编";
     return {
-      type: this.$attrs.type,
+      type,
+      text,
       submit: function(id) {
         if (isNaN(id)) {
           this.$noty.error("请检查你的输入<br/>房间号应为数字");

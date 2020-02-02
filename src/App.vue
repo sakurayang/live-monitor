@@ -1,10 +1,20 @@
 <template>
-  <transition name="fade" mode="out-in">
-    <div id="app">
-      <router-view />
-    </div>
-  </transition>
+  <div id="app">
+    <transition name="fade" mode="out-in">
+      <main>
+        <router-view />
+      </main>
+    </transition>
+    <Sidebar />
+  </div>
 </template>
+
+<script>
+import Sidebar from "@/components/Sidebar.vue";
+export default {
+  components: { Sidebar }
+};
+</script>
 
 <style>
 #app {
