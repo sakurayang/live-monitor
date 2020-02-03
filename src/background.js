@@ -1,16 +1,17 @@
 "use strict";
-
-import { app, protocol, BrowserWindow } from "electron";
+/* global __static */
+import { app, protocol, BrowserWindow, Menu } from "electron";
 import {
   createProtocol,
   installVueDevtools
 } from "vue-cli-plugin-electron-builder/lib";
+import path from "path";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
-
+Menu.setApplicationMenu(null);
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } }
@@ -19,8 +20,9 @@ protocol.registerSchemesAsPrivileged([
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 720,
+    icon: path.join(__static, "icon.png"),
     webPreferences: {
       nodeIntegration: true
     }
@@ -33,7 +35,7 @@ function createWindow() {
   } else {
     createProtocol("app");
     // Load the index.html when not in development
-    win.loadURL("app://./index.html");
+    win.loadURL("app://./index.html/#/");
   }
 
   win.on("closed", () => {
@@ -69,11 +71,12 @@ app.on("ready", async () => {
     // Electron will not launch with Devtools extensions installed on Windows 10 with dark mode
     // If you are not using Windows 10 dark mode, you may uncomment these lines
     // In addition, if the linked issue is closed, you can upgrade electron and uncomment these lines
-    // try {
-    //   await installVueDevtools()
-    // } catch (e) {
-    //   console.error('Vue Devtools failed to install:', e.toString())
-    // }
+    try {
+      await installVueDevtools();
+    } catch (e) {
+      console.error("Vue Devtools failed to install:", e.toString());
+    }
+    app.setAccessibilitySupportEnabled(enabled);
   }
   createWindow();
 });

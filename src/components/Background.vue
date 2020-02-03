@@ -2,9 +2,17 @@
   <div>
     <div class="background" />
     <div class="copyright">
-      <a href="https://www.pixiv.net/artworks/68711812">pixiv: 68711812</a>
+      <span
+        @click="
+          window.open(
+            'https://pixiv.com/artworks/68711812',
+            '_blank',
+            'preload=yes'
+          )
+        "
+      >pixiv: 68711812</span>
       <br />mito by
-      <a href="https://www.pixiv.net/users/12845810">焦茶 ◆3日目A68a</a>
+      <span>焦茶 ◆3日目A68a</span>
     </div>
   </div>
 </template>
