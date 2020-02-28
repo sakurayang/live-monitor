@@ -3,7 +3,8 @@
     <background />
     <div class="panel">
       <div class="title">
-        <div class="subtitle">Bili Monitor</div>数据监控室
+        <div class="subtitle">Bili Monitor</div>
+        数据监控室
       </div>
       <div
         v-for="item in feature"
@@ -11,7 +12,9 @@
         class="feature"
         :class="item.class"
         @click="push(item.class)"
-      >{{ item.text }}</div>
+      >
+        {{ item.text }}
+      </div>
     </div>
   </div>
 </template>
@@ -24,11 +27,11 @@ export default {
     const router = this.$router;
     function push(type) {
       if (type === "live") {
-        router.push("/live");
+        router.push({ name: "live", params: { type: "live" } });
       } else if (type === "video") {
-        router.push("/video");
+        router.push({ name: "video", params: { type: "video" } });
       } else if (type === "rank") {
-        router.push("/rank");
+        router.push({ name: "rank", params: { type: "rank" } });
       } else {
         router.go(0);
       }

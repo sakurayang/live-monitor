@@ -14,28 +14,35 @@ let win;
 Menu.setApplicationMenu(null);
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
-  { scheme: "app", privileges: { secure: true, standard: true } }
+  {
+    scheme: "app",
+    privileges: {
+      secure: true,
+      standard: true
+    }
+  }
 ]);
 
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    width: 1920 * 0.8,
+    height: 1080 * 0.8,
     icon: path.join(__static, "icon.png"),
     webPreferences: {
       nodeIntegration: true
     }
   });
 
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
+  if (isDevelopment && process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
     if (!process.env.IS_TEST) win.webContents.openDevTools();
   } else {
     createProtocol("app");
     // Load the index.html when not in development
-    win.loadURL("app://./index.html/#/");
+    win.loadURL(`app://./index.html`);
+    //win.loadFile(path.join(__dirname,"index.html"));
   }
 
   win.on("closed", () => {

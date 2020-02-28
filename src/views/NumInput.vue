@@ -3,13 +3,15 @@
     <background />
     <div class="checkin">
       <h1 class="title">
-        <!--eslint-disable-next-line prettier/prettier-->
-        请输入<span :key="type">{{ text }}</span>号
+        <span v-if="type === 'live'">请输入直播间号</span>
+        <span v-else-if="type === 'video'">请输入AV号</span>
+        <span v-else-if="type === 'rank'">请输入分区号</span>
+        <span v-else>请输入编号</span>
       </h1>
       <input
         :key="type"
         v-model.number="id"
-        :placeholder="`请输入${text}号`"
+        :placeholder="`请输入数字`"
         type="text"
         class="input"
         autofocus="true"
@@ -23,8 +25,12 @@
 import background from "@/components/Background.vue";
 export default {
   components: { background },
+  props: {
+    // eslint-disable-next-line vue/require-default-prop
+    type: String
+  },
   data: function() {
-    let type = this.$attrs.type;
+    let type = this.type;
     let text =
       type === "live"
         ? "房间"
@@ -34,7 +40,6 @@ export default {
         ? "分区"
         : "编";
     return {
-      type,
       text,
       submit: function(id) {
         if (isNaN(id)) {

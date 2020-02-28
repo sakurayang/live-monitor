@@ -1,8 +1,15 @@
 <template>
   <slide left>
-    <router-link v-for="item in nav" :key="item.id" :to="item.path">
+    <router-link
+      v-for="item in nav"
+      :key="item.id"
+      :to="{ name: item.name, params: { type: item.type } }"
+    >
       <div class="sidebar_item">
-        <font-awesome-icon class="icon" :icon="['fas', item.icon]"></font-awesome-icon>
+        <font-awesome-icon
+          class="icon"
+          :icon="['fas', item.icon]"
+        ></font-awesome-icon>
         {{ item.text }}
       </div>
     </router-link>
@@ -17,26 +24,30 @@ export default {
     return {
       nav: [
         {
-          path: "/",
+          name: "Index",
           text: "主页",
+          type: "Index",
           icon: "home",
           id: 0
         },
         {
-          path: "/live",
+          name: "live",
           text: "直播",
+          type: "live",
           icon: "broadcast-tower",
           id: 1
         },
         {
-          path: "/video",
+          name: "video",
           text: "视频",
+          type: "video",
           icon: "tv",
           id: 2
         },
         {
-          path: "/rank",
+          name: "rank",
           text: "排行",
+          type: "rank",
           icon: "list-ol",
           id: 3
         }
@@ -46,9 +57,16 @@ export default {
 };
 </script>
 <style scoped>
+.bm-menu {
+  word-wrap: none !important;
+  word-break: keep-all !important;
+  overflow-wrap: none !important;
+  overflow-x: hidden !important;
+}
 .sidebar_item {
   cursor: pointer;
   color: white;
+  min-width: 72px;
 }
 .sidebar_item:hover {
   text-shadow: 0px 0px 5px #ea7474;
