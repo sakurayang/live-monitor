@@ -24,6 +24,7 @@ import background from "@/components/Background.vue";
 export default {
   components: { background },
   data: function() {
+    clearInterval(window.timer);
     const router = this.$router;
     function push(type) {
       if (type === "live") {

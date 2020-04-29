@@ -9,7 +9,7 @@
 
 <script>
 import Chart from "@/components/Chart.vue";
-//import request from "request";
+import Axios from "axios";
 import config from "@/utils/config";
 export default {
   name: "LiveChart",
@@ -18,19 +18,23 @@ export default {
   props: { id: Number },
   data: function() {
     let Noty = this.$noty;
+    const axios = Axios.create({
+      baseURL: config.api,
+      timeout: 1500 /*,
+      headers: {
+        "Access-Control-Request-Headers": "access-control-allow-origin",
+        "Access-Control-Request-Method": "GET"
+      }*/
+    });
     let live_status = 0;
     let last_status = 0;
-    let request = this.$http;
+    let g_view_data = [];
+    let g_gift_data = [];
     window.live_status = live_status;
     window.last_status = last_status;
     //console.info(this.id, this);
     window.id = this.id;
     const id = this.id;
-    request.get(`${config.api}/${id}/living`).then(res => {
-      if (!res.data) Noty.info("未开播，请等待");
-    });
-    let live_data = [];
-    request.get(`${config.api}/${id}/add`).then(res => console.log(res.data));
     let chart_options = {
       title: { text: `房间号：${id}` },
       legend: {
@@ -88,6 +92,7 @@ export default {
           step: "end",
           smooth: false,
           connectNulls: true,
+          datasetIndex: 0,
           encode: {
             x: "update_time",
             y: "views"
@@ -99,6 +104,7 @@ export default {
           step: "end",
           smooth: false,
           connectNulls: true,
+          datasetIndex: 1,
           encode: {
             x: "update_time",
             y: "gift_count"
@@ -110,6 +116,7 @@ export default {
           step: "end",
           smooth: false,
           connectNulls: true,
+          datasetIndex: 1,
           encode: {
             x: "update_time",
             y: "silver"
@@ -121,76 +128,115 @@ export default {
           step: "end",
           smooth: false,
           connectNulls: true,
+          datasetIndex: 1,
           encode: {
             x: "update_time",
             y: "gold"
           }
         }
       ],
-      dataset: {
-        source: live_data
-      }
+      dataset: [
+        {
+          source: g_view_data
+        },
+        {
+          source: g_gift_data
+        }
+      ]
     };
+
+    // 开始时获取一次直播状态
+    /*axios
+      .get(`https://api.live.bilibili.com/room/v1/Room/room_init?id=${id}`)
+      .then(res => {
+        if (!res.data.live_status) Noty.info("未开播，请等待");
+        live_status = res.data.live_status;
+        window.live_status = live_status;
+      });*/
+    axios.get(`/live/status?id=${id}`).then(res => {
+      if (!res.data) Noty.info("未开播，请等待");
+      live_status = res.data.live_status;
+      window.live_status = live_status;
+    });
+    // 尝试添加入追踪
+    axios.get(`/live/add/?id=${id}`).then(res => console.log(res.data));
+    // 下播的时候调用的方法
     function stopLiving() {
       Noty.info("下播");
     }
+    // 开播的时候调用的方法
     async function startLiving() {
       Noty.info("开播");
-      window.live_chart.setOption({
+      window.chart.setOption({
         title: {
           text: `房间号：${id}`,
           link: `https://live.bilibili.com/${id}`
         }
       });
       let info = await getInfo(true);
-      live_data = [...info.view_data, ...info.gift_data];
-      console.log(live_data);
-      window.live_chart.setOption({
-        dataset: { source: live_data }
+      // console.log(live_data);
+      g_view_data = info.view_data;
+      for (const key in info.gift_data) {
+        if (key === 0) continue;
+        for (const type of ["gift_count", "silver", "gold"]) {
+          // 累加
+          // [1, 1, 2, 1, 3, 1] => [1, 1+1, 2+2, 4+1, 5+3, 8+1]
+          info.gift_data[key - 1]
+            ? (info.gift_data[key][type] += info.gift_data[key - 1][type])
+            : false;
+        }
+      }
+      g_gift_data = info.gift_data;
+      window.chart.setOption({
+        dataset: [{ source: g_view_data }, { source: g_gift_data }]
       });
     }
+    // 获取信息
+    /**
+      * @param {Number|String} id
+      * @param {Boolean} init
+      * @returns {{
+        view_data:Array<{
+            count: Number,
+            update_time: String,
+            time: Number,
+            views: Number
+        }>,
+        gift_data:Array<{
+            id:Number,
+            count: Number,
+            update_time: String,
+            time: Number,
+            gift_name: String,
+            gift_id: Number,
+            gift_count: Number,
+            silver: Number,
+            gold: Number
+        }>
+    }}
+     */
     async function getInfo(init = false) {
-      //console.log(this);
       let info = (
-        await request.get(`${config.api}/${id}/${init ? "init" : ""}`)
+        await axios.get(`/live/get?id=${id}${init ? "&init=true" : ""}`)
       ).data;
       if (info.code != 0) throw info.msg;
       //console.log(info);
       let view_data = info.result.view;
       let gift_data = info.result.gift;
-
-      if (!(gift_data === null) && gift_data.length > 0) {
-        for (const key in gift_data) {
-          if (key === 0 || !gift_data[key]) continue;
-          for (const _key of ["gift_count", "silver", "gold"]) {
-            gift_data[key]
-              ? (gift_data[key][_key] += gift_data[key - 1][_key])
-              : false;
-          }
-        }
-      } else {
-        for (const key of ["gift_count", "silver", "gold"]) {
-          if (gift_data === null && view_data === null) break;
-          gift_data[gift_data.length - 1]
-            ? (gift_data[gift_data.length - 1][key] +=
-                live_data[live_data.length - 1][key])
-            : false;
-        }
-      }
-      for (const key of ["id", "gift_id", "gift_count", "silver", "gold"]) {
-        if (gift_data === null && view_data === null && gift_data.length < 1)
-          break;
-        view_data[view_data.length - 1][key] = gift_data[gift_data.length - 1]
-          ? gift_data[gift_data.length - 1][key]
-          : 0;
-      }
+      // for (const type of [view_data, gift_data]) {
+      //   for (const item of type) {
+      //     console.log(type);
+      //     item.update_time = new Date(item.update_time).toISOString();
+      //   }
+      // }
       return {
         view_data,
         gift_data
       };
     }
+    //计时器
     async function timer() {
-      live_status = (await request.get(`${config.api}/${id}/living`)).data;
+      live_status = (await axios.get(`/live/status?id=${id}`)).data;
       if (last_status == 0 && live_status == 1) {
         last_status = 1;
         window.live_status = live_status;
@@ -201,26 +247,22 @@ export default {
         let view_data = info.view_data;
         let gift_data = info.gift_data;
         //console.log(info);
-        for (const key of ["gift_count", "silver", "gold"]) {
-          gift_data[gift_data.length - 1]
-            ? (gift_data[gift_data.length - 1][key] +=
-                live_data[live_data.length - 1][key])
-            : false;
-        }
-
-        for (const key of ["id", "gift_id", "gift_count", "silver", "gold"]) {
-          if (!gift_data.length >= 1 || !gift_data[0]) break;
-          view_data[view_data.length - 1][key] = gift_data[gift_data.length - 1]
-            ? gift_data[gift_data.length - 1][key]
-            : 0;
-        }
-        live_data.push(view_data[view_data.length - 1]);
-        if (gift_data.length >= 1 && gift_data[0] !== null)
-          live_data.push(gift_data[gift_data.length - 1]);
-        window.live_chart.setOption({
-          dataset: {
-            source: live_data
+        let last_data = g_gift_data[g_gift_data.length - 1];
+        if (g_gift_data.length > 0) {
+          if (last_data.id === info.gift_data.id) gift_data = last_data;
+          else
+            for (const type of ["gift_count", "silver", "gold"]) {
+              gift_data[type] = info.gift_data[type] + last_data[type];
+            }
+        } else {
+          for (const type of ["gift_count", "silver", "gold"]) {
+            gift_data[type] = info.gift_data[type] + last_data[type];
           }
+        }
+        g_view_data.push(view_data);
+        g_gift_data.push(gift_data);
+        window.chart.setOption({
+          dataset: [{ source: g_view_data }, { source: g_gift_data }]
         });
       } else if (last_status == 1 && live_status == 0) {
         last_status = 0;
@@ -234,14 +276,14 @@ export default {
       startLiving,
       stopLiving,
       chart_options,
-      live_data,
-      timer
+      innertimer: timer
     };
   },
   mounted: function() {
     this.$nextTick(function() {
-      window.live_chart.setOption(this.chart_options);
-      window.live_timer = setInterval(this.timer, 5000);
+      clearInterval(window.timer);
+      window.chart.setOption(this.chart_options);
+      window.timer = setInterval(this.innertimer, 5000);
     });
   }
 };
@@ -252,7 +294,7 @@ export default {
   margin: 0;
   padding: 0;
   position: relative;
-  left: 0;
+  left: 80px;
   top: 0;
   width: 80vw;
   min-width: 800px;

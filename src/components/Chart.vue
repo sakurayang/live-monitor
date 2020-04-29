@@ -8,7 +8,7 @@ export default {
   name: "Chart",
   props: {
     // eslint-disable-next-line vue/require-default-prop
-    id: Number
+    id: String
   },
   data: function() {
     return {};
@@ -18,7 +18,7 @@ export default {
       let chart_contain = document.getElementById("echart");
       let chart_contain_w = chart_contain.getBoundingClientRect().width;
       let chart_contain_h = chart_contain.getBoundingClientRect().height;
-      window.live_chart = echarts.init(chart_contain, {
+      window.chart = echarts.init(chart_contain, {
         height: chart_contain_h,
         width: chart_contain_w
       });
@@ -30,7 +30,7 @@ export default {
      * @returns {Null}
      */
     setData: function(data) {
-      window.live_chart.setOption(data);
+      window.chart.setOption(data);
     }
   }
 };
