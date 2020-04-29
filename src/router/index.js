@@ -2,6 +2,9 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Index from "@/views/Index.vue";
 import Input from "@/views/NumInput.vue";
+import idConver from "../utils/idConver";
+//import Setting from "@/views/setting.vue";
+
 Vue.use(VueRouter);
 
 const building = { template: "<div>Building....</div>" };
@@ -36,12 +39,14 @@ const video_route = [
   {
     path: "/video/:id",
     props: route => {
+      let id = String(route.params.id);
+      id = isNaN(id) || id.startsWith("BV") ? idConver.bv2av(id) : id;
       return {
-        id: Number(route.params.id)
+        id
       };
     },
     component() {
-      return import(/* webpackChunkName: "video" */ "@/views/live.vue");
+      return import(/* webpackChunkName: "video" */ "@/views/video.vue");
     },
     meta: {
       title: "视频 - 数据监控室"
@@ -98,7 +103,15 @@ const routes = [
     meta: {
       title: "主页 - 数据监控室"
     }
-  },
+  } /*
+  {
+    path: "/setting",
+    name: "Setting",
+    component: Setting,
+    meta: {
+      title: "设置 - 数据监控室"
+    }
+  },*/,
   ...live_route,
   ...video_route,
   ...rank_route /*,
