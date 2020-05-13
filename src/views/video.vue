@@ -9,8 +9,8 @@
 <script>
 import Chart from "@/components/Chart.vue";
 import Axios from "axios";
-import config from "@/utils/config";
-import "../utils/idConver";
+import { config } from "@/utils/config";
+import "@/utils/idConver";
 export default {
   name: "VideoChart",
   components: { Chart },
@@ -20,7 +20,7 @@ export default {
     window.id = this.id;
     const id = this.id;
     const axios = Axios.create({
-      baseURL: config.api,
+      baseURL: config.get("api"),
       timeout: 1500 /*,
       headers: {
         "Access-Control-Request-Headers": "access-control-allow-origin",

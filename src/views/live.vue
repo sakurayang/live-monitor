@@ -10,7 +10,7 @@
 <script>
 import Chart from "@/components/Chart.vue";
 import Axios from "axios";
-import config from "@/utils/config";
+import { config } from "@/utils/config";
 export default {
   name: "LiveChart",
   components: { Chart },
@@ -19,7 +19,7 @@ export default {
   data: function() {
     let Noty = this.$noty;
     const axios = Axios.create({
-      baseURL: config.api,
+      baseURL: config.get("api"),
       timeout: 1500 /*,
       headers: {
         "Access-Control-Request-Headers": "access-control-allow-origin",

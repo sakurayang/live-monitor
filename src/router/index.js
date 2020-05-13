@@ -3,7 +3,7 @@ import VueRouter from "vue-router";
 import Index from "@/views/Index.vue";
 import Input from "@/views/NumInput.vue";
 import idConver from "../utils/idConver";
-//import Setting from "@/views/setting.vue";
+import Setting from "@/views/setting.vue";
 
 Vue.use(VueRouter);
 
@@ -103,7 +103,7 @@ const routes = [
     meta: {
       title: "主页 - 数据监控室"
     }
-  } /*
+  },
   {
     path: "/setting",
     name: "Setting",
@@ -111,7 +111,7 @@ const routes = [
     meta: {
       title: "设置 - 数据监控室"
     }
-  },*/,
+  },
   ...live_route,
   ...video_route,
   ...rank_route /*,
