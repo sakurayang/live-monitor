@@ -1,5 +1,5 @@
 let value = {
-  api: "http://114.55.100.200:8083"
+  api: "https://server.bkwhentai.top:8083"
 };
 let default_value = { ...value };
 Object.freeze(default_value);

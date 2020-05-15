@@ -249,14 +249,14 @@ export default {
         //console.log(info);
         let last_data = g_gift_data[g_gift_data.length - 1];
         if (g_gift_data.length > 0) {
-          if (last_data.id === info.gift_data.id) gift_data = last_data;
+          if (last_data.id === gift_data[0].id) gift_data = last_data;
           else
             for (const type of ["gift_count", "silver", "gold"]) {
-              gift_data[type] = info.gift_data[type] + last_data[type];
+              gift_data[0][type] = gift_data[0][type] + last_data[type];
             }
         } else {
           for (const type of ["gift_count", "silver", "gold"]) {
-            gift_data[type] = info.gift_data[type] + last_data[type];
+            gift_data[0][type] = gift_data[0][type] + last_data[type];
           }
         }
         g_view_data.push(view_data);
